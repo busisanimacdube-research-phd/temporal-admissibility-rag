@@ -1,0 +1,15 @@
+__pycache__/
+*.pyc
+.DS_Store
+cache/
+data/filings/
+data/pages/
+data/raw/
+data/xbrl/
+data/kg/
+figures/
+*.tex
+*.aux
+*.log
+*.bbl
+*.blg

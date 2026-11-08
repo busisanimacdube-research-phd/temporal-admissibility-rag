@@ -1,0 +1,9 @@
+numpy
+requests
+lxml
+pymupdf
+Pillow
+rank_bm25
+sentence-transformers
+torch
+matplotlib

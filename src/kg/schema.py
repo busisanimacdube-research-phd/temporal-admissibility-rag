@@ -1,0 +1,27 @@
+from __future__ import annotations
+COMPANY = 'Company'
+CONCEPT = 'Concept'
+PERIOD = 'Period'
+FILING = 'Filing'
+FACT = 'FactAssertion'
+TABLE = 'TableRegion'
+PAGE = 'PageRegion'
+SPAN = 'TextSpan'
+NODE_TYPES = (COMPANY, CONCEPT, PERIOD, FILING, FACT, TABLE, PAGE, SPAN)
+TEMPORAL_NODE_TYPES = (FILING, FACT, TABLE, PAGE, SPAN)
+EVIDENCE_NODE_TYPES = (FACT, TABLE, PAGE, SPAN)
+MODALITY = {FACT: 'structured', TABLE: 'table', PAGE: 'visual', SPAN: 'text'}
+FILES = 'files'
+ASSERTS = 'asserts'
+OF_CONCEPT = 'of_concept'
+COVERS = 'covers'
+SUPERSEDES = 'supersedes'
+DISPLAYED_IN = 'displayed_in'
+RENDERED_ON = 'rendered_on'
+CONTAINS = 'contains'
+MENTIONS = 'mentions'
+PRECEDES = 'precedes'
+EQUIV = 'modality_equivalent'
+ABOUT = 'about'
+EDGE_TYPES = (FILES, ASSERTS, OF_CONCEPT, COVERS, SUPERSEDES, DISPLAYED_IN, RENDERED_ON, CONTAINS, MENTIONS, PRECEDES, EQUIV, ABOUT)
+CROSSMODAL_EDGE_TYPES = (DISPLAYED_IN, RENDERED_ON, EQUIV)

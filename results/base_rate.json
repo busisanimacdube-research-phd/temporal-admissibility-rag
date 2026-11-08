@@ -1,0 +1,14 @@
+{
+ "base_rate_mean": 36.246680773479,
+ "base_rate_median": 33.90015994612341,
+ "random10_elq": 86.52605346825699,
+ "questions_base_rate_zero": 0,
+ "units": {
+  "BAC": 14958,
+  "CVX": 10828,
+  "DIS": 10594,
+  "JNJ": 11868,
+  "PFE": 12312,
+  "TSLA": 11879
+ }
+}

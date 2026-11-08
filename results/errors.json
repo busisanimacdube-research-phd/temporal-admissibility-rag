@@ -1,0 +1,30 @@
+{
+ "hybrid": {
+  "errors": 408,
+  "categories": {
+   "premature": 35,
+   "computation": 117,
+   "abstention": 47,
+   "later value": 50,
+   "earlier value": 29,
+   "not retrieved": 36,
+   "multi-hop": 19,
+   "other period": 60,
+   "other": 15
+  }
+ },
+ "timefiltered": {
+  "errors": 299,
+  "categories": {
+   "premature": 4,
+   "computation": 118,
+   "abstention": 44,
+   "later value": 0,
+   "earlier value": 28,
+   "not retrieved": 32,
+   "multi-hop": 11,
+   "other period": 58,
+   "other": 4
+  }
+ }
+}
