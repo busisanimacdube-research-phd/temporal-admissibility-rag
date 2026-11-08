@@ -9,7 +9,7 @@ from systems.base import PIT_RULE
 from systems.tempfinrag import TempFinRAG
 import systems.tempfinrag as TF
 import datetime as dt
-OUT = os.path.join(HERE, 'results', 'variants')
+OUT = os.environ.get('VARIANT_OUT', os.path.join(HERE, 'results', 'variants'))
 
 class HybridInstructed(HybridRAG):
     name = 'Hybrid, dates and instruction, no filter'

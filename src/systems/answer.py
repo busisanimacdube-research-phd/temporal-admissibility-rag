@@ -4,9 +4,11 @@ SCALES = {'thousand': 1000.0, 'thousands': 1000.0, 'k': 1000.0, 'million': 10000
 ABSTAIN_MARKERS = ('unanswerable', 'not available', 'cannot be answered', 'no evidence', 'not yet public', 'insufficient', 'not disclosed', 'unknown', 'cannot determine', 'not public', 'abstain')
 _NUM = re.compile('-?\\$?\\s*\\(?\\d[\\d,]*\\.?\\d*\\)?\\s*(?:thousand|million|billion|trillion|[kmbt]n?)?%?', re.I)
 _THOUSANDS = re.compile('(?<=\\d),(?=\\d{3}(?:\\D|$))')
+_BARE = re.compile('(?<=[\\[:,])(\\s*)([A-Za-z][A-Za-z0-9_]*)(?=\\s*[,\\]}])')
 
 def _repair_json(txt: str) -> str:
-    return _THOUSANDS.sub('', txt)
+    txt = _THOUSANDS.sub('', txt)
+    return _BARE.sub(lambda m: m.group(0) if m.group(2) in ('true', 'false', 'null') else f'{m.group(1)}"{m.group(2)}"', txt)
 
 def parse_output(raw: str) -> dict:
     out = {'answer': None, 'citations': [], 'abstain': False, 'raw': raw}

@@ -57,7 +57,7 @@ python src/corpus/render_all.py
 python src/corpus/xbrl_facts.py
 python src/bench/build_bench.py
 python src/eval/run.py --split test --systems main
-python analysis/run_variants.py hybrid timefiltered hybrid_instr filter_only soft_rerank
+python analysis/run_variants.py hybrid timefiltered hybrid_instr filter_only soft_rerank hybrid_14b hybrid_llama8 tempfinrag tempfinrag_nofilter
 ```
 
 The pipelines use local models served by Ollama: `qwen2.5vl:7b` (reader), `bge-m3` (embeddings), and `qwen2.5:14b`, `qwen2.5:7b` and `llama3.1:8b` for the reader variants. Generation is greedy (temperature 0).

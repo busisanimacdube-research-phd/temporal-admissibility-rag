@@ -2,7 +2,8 @@ import collections, json, os, re, sys
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
 from analyse_leakage import HERE, SRC, wilson, mcnemar
 RUNS = os.path.join(HERE, 'results', 'variants')
-VARIANTS = ['hybrid', 'timefiltered', 'hybrid_instr', 'hybrid_14b']
+ORDER = ['hybrid', 'timefiltered', 'hybrid_instr', 'hybrid_14b', 'hybrid_llama8', 'hybrid_q7', 'filter_only', 'soft_rerank', 'tempfinrag', 'tempfinrag_nofilter']
+VARIANTS = [v for v in ORDER if os.path.exists(os.path.join(RUNS, f'{v}.jsonl')) and sum((1 for _ in open(os.path.join(RUNS, f'{v}.jsonl')))) == 612]
 
 def main():
     items = {}
@@ -29,12 +30,17 @@ def main():
                 cq_late += any((late[i] for i in idx))
         pre = [r for r in rs if items[r['qid']].get('restatement_phase') == 'pre_revision' and items[r['qid']].get('superseded_value') is not None and (r.get('acl') is not None)]
         nyr = [r for r in rs if items[r['qid']]['family'] == 'unanswerable_at_tau']
+        pre_all = [r for r in rs if items[r['qid']].get('restatement_phase') == 'pre_revision']
+        units = sum((len(r['asserted']) for r in rs))
+        late_units = sum((bool(a) and a[:10] > items[r['qid']]['as_of'][:10] for r in rs for a in r['asserted']))
         n = len(rs)
-        res[v] = {'n': n, 'acc': wilson(sum((r['acc'] for r in rs)), n), 'evidence_leak_q': wilson(leak_q, n), 'answer_leak': wilson(sum((r['acl'] for r in pre)), len(pre)), 'answer_leak_n': len(pre), 'pre_revision_acc': wilson(sum((r['acc'] for r in pre)), len(pre)), 'not_yet_reported_abstain': wilson(sum((r['abstain'] for r in nyr)), len(nyr)), 'abstain_all': 100 * sum((r['abstain'] for r in rs)) / n, 'cited_units': cites, 'cited_late_share': 100 * cites_late / cites if cites else None, 'questions_citing': cq, 'questions_citing_late': wilson(cq_late, cq), 'acc_by_family': {f: wilson(sum((x['acc'] for x in g)), len(g)) + (len(g),) for f, g in sorted(collections.defaultdict(list, {k: [x for x in rs if items[x['qid']]['family'] == k] for k in {items[x['qid']]['family'] for x in rs}}).items())}}
+        res[v] = {'n': n, 'acc': wilson(sum((r['acc'] for r in rs)), n), 'evidence_leak_q': wilson(leak_q, n), 'answer_leak': wilson(sum((r['acl'] for r in pre)), len(pre)), 'answer_leak_n': len(pre), 'pre_revision_acc': wilson(sum((r['acc'] for r in pre)), len(pre)), 'pre_revision_acc_all': wilson(sum((r['acc'] for r in pre_all)), len(pre_all)), 'evidence_leak_u': 100 * late_units / units if units else 0.0, 'not_yet_reported_abstain': wilson(sum((r['abstain'] for r in nyr)), len(nyr)), 'abstain_all': 100 * sum((r['abstain'] for r in rs)) / n, 'cited_units': cites, 'cited_late_share': 100 * cites_late / cites if cites else None, 'questions_citing': cq, 'questions_citing_late': wilson(cq_late, cq), 'acc_by_family': {f: wilson(sum((x['acc'] for x in g)), len(g)) + (len(g),) for f, g in sorted(collections.defaultdict(list, {k: [x for x in rs if items[x['qid']]['family'] == k] for k in {items[x['qid']]['family'] for x in rs}}).items())}}
     same = sum((1 for q, r in rows['hybrid'].items() if q in stored and r['acc'] == stored[q]['acc']))
     res['hybrid']['agreement_with_stored_run'] = [same, len(rows['hybrid'])]
     pairs = {}
-    for a, b in [('hybrid', 'timefiltered'), ('hybrid', 'hybrid_instr'), ('hybrid_instr', 'timefiltered'), ('hybrid', 'hybrid_14b'), ('hybrid_14b', 'timefiltered')]:
+    for a, b in [('hybrid', 'timefiltered'), ('hybrid', 'hybrid_instr'), ('hybrid_instr', 'timefiltered'), ('hybrid', 'hybrid_14b'), ('hybrid_14b', 'timefiltered'), ('hybrid', 'hybrid_llama8'), ('hybrid_llama8', 'timefiltered'), ('hybrid', 'hybrid_q7'), ('hybrid', 'filter_only'), ('filter_only', 'timefiltered'), ('hybrid_instr', 'filter_only'), ('hybrid', 'soft_rerank'), ('soft_rerank', 'filter_only'), ('soft_rerank', 'timefiltered'), ('tempfinrag_nofilter', 'tempfinrag'), ('hybrid', 'tempfinrag_nofilter')]:
+        if a not in rows or b not in rows:
+            continue
         q = sorted(set(rows[a]) & set(rows[b]))
         x = sum((1 for i in q if rows[a][i]['acc'] == 1 and rows[b][i]['acc'] == 0))
         y = sum((1 for i in q if rows[a][i]['acc'] == 0 and rows[b][i]['acc'] == 1))
@@ -44,7 +50,7 @@ def main():
         pairs[f'{a}_vs_{b}'] = {'n': len(q), 'only_first': x, 'only_second': y, 'p': mcnemar(x, y), 'answer_leak_only_first': xa, 'answer_leak_only_second': ya, 'answer_leak_p': mcnemar(xa, ya)}
     json.dump({'variants': res, 'paired': pairs}, open(os.path.join(HERE, 'results', 'variants.json'), 'w'), indent=1)
     for v, r in res.items():
-        print(f"{v:13s} acc {r['acc'][0]:5.1f} [{r['acc'][1]:.1f},{r['acc'][2]:.1f}] ELq {r['evidence_leak_q'][0]:5.1f} AL {r['answer_leak'][0]:5.1f} (n={r['answer_leak_n']}) preacc {r['pre_revision_acc'][0]:5.1f} NYRabst {r['not_yet_reported_abstain'][0]:5.1f} abst {r['abstain_all']:4.1f} citedLate {r['cited_late_share'] or 0:5.1f} qCiteLate {r['questions_citing_late'][0]:5.1f} (n={r['questions_citing']})")
+        print(f"{v:13s} acc {r['acc'][0]:5.1f} [{r['acc'][1]:.1f},{r['acc'][2]:.1f}] ELq {r['evidence_leak_q'][0]:5.1f} ELu {r['evidence_leak_u']:5.1f} AL {r['answer_leak'][0]:5.1f} (n={r['answer_leak_n']}) preacc136 {r['pre_revision_acc_all'][0]:5.1f} NYRabst {r['not_yet_reported_abstain'][0]:5.1f} abst {r['abstain_all']:4.1f} citedLate {r['cited_late_share'] or 0:5.1f} qCiteLate {r['questions_citing_late'][0]:5.1f} (n={r['questions_citing']})")
     print('hybrid rerun vs stored acc agreement', res['hybrid']['agreement_with_stored_run'])
     for k, p in pairs.items():
         print(k, p)
